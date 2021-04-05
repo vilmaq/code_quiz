@@ -2,6 +2,7 @@ const question = document.querySelector("#question");
 const choices = Array.from(document.querySelectorAll(".choice-text"));
 const progressText = document.querySelector("#progressText");
 const scoreText = document.querySelector("#score");
+const timeText = document.querySelector("#time");
 const progressBarFull = document.querySelector("#progressBarFull");
 
 let currentQuestion = {};
@@ -66,13 +67,30 @@ startQuiz = () => {
   score = 0;
   availableQuestions = [...questions];
   getNewQuestion();
+  let time = countdown();
 };
+
+function countdown() {
+  let timeLeft = 10;
+
+  const callback = function () {
+    if (timeLeft === 0) {
+      timeText.textContent = `${timeLeft}`;
+      return window.location.assign("highscores.html");
+    }
+    if (timeLeft > 0) {
+      timeText.textContent = `${timeLeft}`;
+      timeLeft -= 1;
+    }
+  };
+  const timeInterval = setInterval(callback, 1000);
+}
 
 getNewQuestion = () => {
   if (availableQuestions.length === 0 || questionCounter > MAX_QUESTIONS) {
     localStorage.setItem("mostRecentScore", score);
 
-    return window.location.assign("/highscores.html");
+    return window.location.assign("highscores.html");
   }
 
   questionCounter++;
