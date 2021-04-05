@@ -59,26 +59,14 @@ let questions = [
 ];
 
 const SCORE_POINTS = 100;
-const MAX_QUESTIONS = 5;
+const MAX_QUESTIONS = 4;
 
 startQuiz = () => {
   questionCounter = 0;
   score = 0;
   availableQuestions = [...questions];
-  getNewQuestion()
-
+  getNewQuestion();
 };
-
-const startTimer = function () {
-  //set time to 5 minutes
-  let = 100;
-
-  //call the timer every second
-  setInterval(function () {
-  //in each call, print the remaining time to UI 
-labelTimer.textContent = time; 
-
-  }, 1000);
 
 getNewQuestion = () => {
   if (availableQuestions.length === 0 || questionCounter > MAX_QUESTIONS) {
