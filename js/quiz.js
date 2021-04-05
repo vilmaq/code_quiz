@@ -7,7 +7,6 @@ const progressBarFull = document.querySelector("#progressBarFull");
 
 let currentQuestion = {};
 let acceptingAnswers = true;
-let score = 0;
 let questionCounter = 0;
 let availableQuestions = [];
 
@@ -59,85 +58,95 @@ let questions = [
   },
 ];
 
-const SCORE_POINTS = 100;
-const MAX_QUESTIONS = 4;
+const MAX_QUESTIONS = 5;
+const sec = 5; // 5 seconds removed from the current timeLeft when a question is answered incorrectly
+let timeLeft = 80;
 
 startQuiz = () => {
   questionCounter = 0;
-  score = 0;
   availableQuestions = [...questions];
   getNewQuestion();
-  let time = countdown();
+  countdown();
 };
 
-function countdown() {
-  let timeLeft = 10;
-
-  const callback = function () {
-    if (timeLeft === 0) {
-      timeText.textContent = `${timeLeft}`;
-      return window.location.assign("highscores.html");
-    }
-    if (timeLeft > 0) {
-      timeText.textContent = `${timeLeft}`;
-      timeLeft -= 1;
-    }
-  };
-  const timeInterval = setInterval(callback, 1000);
-}
-
+// the function that will load the questions in the screen. The function checks if the max number of questions available has been reached and if yes it jumps to the highscore.html page
 getNewQuestion = () => {
   if (availableQuestions.length === 0 || questionCounter > MAX_QUESTIONS) {
-    localStorage.setItem("mostRecentScore", score);
-
+    localStorage.setItem("mostRecentScore", timeLeft);
     return window.location.assign("highscores.html");
   }
 
   questionCounter++;
+  // styling the progressBar every time a question is answered
+
   progressText.innerText = `Question ${questionCounter} of ${MAX_QUESTIONS}`;
   progressBarFull.style.width = `${(questionCounter / MAX_QUESTIONS) * 100}%`;
+
+  //loading the questions randomly
 
   const questionsIndex = Math.floor(Math.random() * availableQuestions.length);
   currentQuestion = availableQuestions[questionsIndex];
   question.innerText = currentQuestion.question;
+
+  // loading the choices available defined by the respective number
 
   choices.forEach((choice) => {
     const number = choice.dataset["number"];
     choice.innerText = currentQuestion["choice" + number];
   });
 
+  //remove the question answered
   availableQuestions.splice(questionsIndex, 1);
 
   acceptingAnswers = true;
 };
 
-choices.forEach((choice) => {
-  choice.addEventListener("click", (e) => {
-    if (!acceptingAnswers) return;
+//countdown function
+function countdown() {
+  const callback = function () {
+    //check if there is still time left
+    if (timeLeft > 0) {
+      timeText.textContent = `${timeLeft}`;
+      timeLeft -= 1;
 
-    acceptingAnswers = false;
-    const selectedChoice = e.target;
-    const selectedAnswer = selectedChoice.dataset["number"];
+      choices.forEach((choice) => {
+        choice.addEventListener("click", (e) => {
+          if (!acceptingAnswers) return;
 
-    let classToApply =
-      selectedAnswer == currentQuestion.answer ? "correct" : "incorrect";
+          acceptingAnswers = false;
+          const selectedChoice = e.target;
+          const selectedAnswer = selectedChoice.dataset["number"];
 
-    if (classToApply === "correct") {
-      incrementScore(SCORE_POINTS);
+          let classToApply =
+            selectedAnswer == currentQuestion.answer ? "correct" : "incorrect";
+
+          // decrement time for every incorrect choice by calling decrement() function
+          if (classToApply === "incorrect") {
+            decrementTime(sec);
+          }
+          selectedChoice.parentElement.classList.add(classToApply);
+
+          setTimeout(() => {
+            selectedChoice.parentElement.classList.remove(classToApply);
+            getNewQuestion();
+          }, 1000);
+        });
+      });
+
+      //decrement the timeLeft by 5sec
+      decrementTime = (sec) => {
+        timeLeft -= sec;
+        timeText.innerText = timeLeft;
+      };
     }
-
-    selectedChoice.parentElement.classList.add(classToApply);
-
-    setTimeout(() => {
-      selectedChoice.parentElement.classList.remove(classToApply);
-      getNewQuestion();
-    }, 1000);
-  });
-});
-
-incrementScore = (num) => {
-  score += num;
-  scoreText.innerText = score;
-};
+    // if no more time left jump to highscores.html and store in Local Storage most recent Scores
+    if (timeLeft <= 0) {
+      timeText.textContent = `${timeLeft}`;
+      localStorage.setItem("mostRecentScore", timeLeft);
+      return window.location.assign("highscores.html");
+    }
+  };
+  const timeInterval = setInterval(callback, 1000);
+}
 
 startQuiz();

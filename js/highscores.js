@@ -11,22 +11,24 @@ const highScores = JSON.parse(localStorage.getItem("highScores")) || [];
 finalScore.innerText = mostRecentScore;
 
 username.addEventListener("keyup", () => {
+  //disable save button if no username entered
   saveScoreBtn.disabled = !username.value;
 });
 
-saveHighScore = (e) => {
-  e.preventDefault();
-
+// create obj score with two keys score and name
+saveHighScore = () => {
   const score = {
     score: mostRecentScore,
     name: username.value,
   };
 
+  //push the object created to the Array highscores previously created
   highScores.push(score);
-  console.log(score);
-  console.log(username);
+
+  // store the result in Local Storage
 
   localStorage.setItem("highScores", JSON.stringify(highScores));
+  username.innerText = highScores["name"];
 };
 const clear = () => {
   localStorage.clear();
